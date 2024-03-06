@@ -38,7 +38,7 @@ resource "azurerm_resource_group" "RG" {
   location = var.A-location
   name     = var.B-resource_group_name
   provisioner "local-exec" {
-    command = "az vm image terms accept --urn cisco:cisco-csr-1000v:17_3_4a-byol:latest"
+    command = "az vm image terms accept --urn cisco:cisco-csr-1000v:17_03_08a-byol:latest"
   }
 }
 
@@ -894,14 +894,14 @@ resource "azurerm_linux_virtual_machine" "hubcsr1000v" {
     storage_account_type = "Standard_LRS"
   }
   plan {
-    name      = "17_3_4a-byol"
+    name      = "17_03_08a-byol"
     product   = "cisco-csr-1000v"
     publisher = "cisco"
   }
   source_image_reference {
     offer     = "cisco-csr-1000v"
     publisher = "cisco"
-    sku       = "17_3_4a-byol"
+    sku       = "17_03_08a-byol"
     version   = "latest"
   }
   custom_data = base64encode(local.hubcsr_custom_data)
