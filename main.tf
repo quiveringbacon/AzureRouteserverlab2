@@ -880,7 +880,7 @@ resource "azurerm_virtual_machine_extension" "killspoke2vmfirewall" {
   
 }
 
-resource "azurerm_linux_virtual_machine" "hubcsr1000v" {
+resource "azurerm_linux_virtual_machine" "hubc8000v" {
   admin_password                  = var.E-password
   admin_username                  = var.D-username
   disable_password_authentication = false
