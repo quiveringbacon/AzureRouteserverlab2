@@ -38,7 +38,7 @@ resource "azurerm_resource_group" "RG" {
   location = var.A-location
   name     = var.B-resource_group_name
   provisioner "local-exec" {
-    command = "az vm image terms accept --urn cisco:cisco-csr-1000v:17_03_08a-byol:latest"
+    command = "az vm image terms accept --urn cisco:cisco-c8000v-byol:17_13_01a-byol:latest"
   }
 }
 
@@ -894,14 +894,14 @@ resource "azurerm_linux_virtual_machine" "hubcsr1000v" {
     storage_account_type = "Standard_LRS"
   }
   plan {
-    name      = "17_03_08a-byol"
-    product   = "cisco-csr-1000v"
+    name      = "17_13_01a-byol"
+    product   = "cisco-c8000v-byol"
     publisher = "cisco"
   }
   source_image_reference {
-    offer     = "cisco-csr-1000v"
+    offer     = "cisco-c8000v-byol"
     publisher = "cisco"
-    sku       = "17_03_08a-byol"
+    sku       = "17_13_01a-byol"
     version   = "latest"
   }
   custom_data = base64encode(local.hubcsr_custom_data)
@@ -910,10 +910,15 @@ resource "azurerm_linux_virtual_machine" "hubcsr1000v" {
 # Locals Block for custom data
 locals {
 hubcsr_custom_data = <<CUSTOM_DATA
+Section: IOS configuration
 int gi1
+no shut
+ip address dhcp
 ip nat outside
 
 int gi2
+no shut
+ip address dhcp
 ip nat inside
 
 ip route 10.0.0.0 255.255.0.0 10.0.3.1
