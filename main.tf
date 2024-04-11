@@ -205,12 +205,12 @@ resource "azurerm_virtual_network" "hub-vnet" {
   subnet {
     address_prefix     = "10.0.2.0/24"
     name                 = "outside"
-    security_group =  azurerm_network_security_group.hubcsrsshnsg.id
+    security_group =  azurerm_network_security_group.hubc8000sshnsg.id
   }
   subnet {
     address_prefix     = "10.0.3.0/24"
     name                 = "inside" 
-    security_group = azurerm_network_security_group.hubcsrnsg.id
+    security_group = azurerm_network_security_group.hubc8000nsg.id
   }
   subnet {
     address_prefix     = "10.0.4.0/24"
@@ -408,9 +408,9 @@ resource "azurerm_network_security_rule" "spokevnetnsgrule1" {
   
 }
 
-resource "azurerm_network_security_group" "hubcsrnsg" {
+resource "azurerm_network_security_group" "hubc8000nsg" {
   location            = azurerm_resource_group.RG.location
-  name                = "hub-csr-default-nsg"
+  name                = "hub-c8000-default-nsg"
   resource_group_name = azurerm_resource_group.RG.name
   timeouts {
     create = "2h"
@@ -420,16 +420,16 @@ resource "azurerm_network_security_group" "hubcsrnsg" {
   }
   
 }
-resource "azurerm_network_security_rule" "hubcsrnsgrule1" {
+resource "azurerm_network_security_rule" "hubc8000nsgrule1" {
   access                      = "Allow"
   destination_address_prefix  = "*"
   destination_port_range      = "*"
   direction                   = "Inbound"
   name                        = "AllowCidrBlockInbound"
-  network_security_group_name = "hub-csr-default-nsg"
+  network_security_group_name = "hub-c8000-default-nsg"
   priority                    = 2711
   protocol                    = "*"
-  resource_group_name         = azurerm_network_security_group.hubcsrnsg.resource_group_name
+  resource_group_name         = azurerm_network_security_group.hubc8000nsg.resource_group_name
   source_address_prefix       = "10.0.0.0/8"
   source_port_range           = "*"
   timeouts {
@@ -441,7 +441,7 @@ resource "azurerm_network_security_rule" "hubcsrnsgrule1" {
   
 }
 
-resource "azurerm_network_security_group" "hubcsrsshnsg" {
+resource "azurerm_network_security_group" "hubc8000sshnsg" {
   location            = azurerm_resource_group.RG.location
   name                = "hub-ssh-default-nsg"
   resource_group_name = azurerm_resource_group.RG.name
@@ -453,7 +453,7 @@ resource "azurerm_network_security_group" "hubcsrsshnsg" {
   }
   
 }
-resource "azurerm_network_security_rule" "hubcsrsshnsgrule1" {
+resource "azurerm_network_security_rule" "hubc8000sshnsgrule1" {
   access                      = "Allow"
   destination_address_prefix  = "*"
   destination_port_range      = "22"
@@ -462,7 +462,7 @@ resource "azurerm_network_security_rule" "hubcsrsshnsgrule1" {
   network_security_group_name = "hub-ssh-default-nsg"
   priority                    = 100
   protocol                    = "Tcp"
-  resource_group_name         = azurerm_network_security_group.hubcsrsshnsg.resource_group_name
+  resource_group_name         = azurerm_network_security_group.hubc8000sshnsg.resource_group_name
   source_address_prefix       = var.C-home_public_ip
   source_port_range           = "*"
   timeouts {
@@ -494,7 +494,7 @@ resource "azurerm_route_table" "RT1" {
     delete = "2h"
   }
 }
-resource "azurerm_subnet_route_table_association" "csroutsidesubnet" {
+resource "azurerm_subnet_route_table_association" "c8000outsidesubnet" {
   subnet_id      = azurerm_virtual_network.hub-vnet.subnet.*.id[2]
   route_table_id = azurerm_route_table.RT1.id
   timeouts {
@@ -552,8 +552,8 @@ resource "azurerm_subnet_route_table_association" "onspoke2defaultsubnet" {
 }
 
 #Public IP's
-resource "azurerm_public_ip" "hubcsr-pip" {
-  name                = "hubcsr-pip"
+resource "azurerm_public_ip" "hubc8000-pip" {
+  name                = "hubc8000-pip"
   location            = azurerm_resource_group.RG.location
   resource_group_name = azurerm_resource_group.RG.name
   allocation_method = "Static"
@@ -630,9 +630,15 @@ resource "azurerm_route_server" "RS1" {
   public_ip_address_id             = azurerm_public_ip.routeserver-pip.id
   subnet_id                        = azurerm_virtual_network.hub-vnet.subnet.*.id[4]
   branch_to_branch_traffic_enabled = true
-  provisioner "local-exec" {
-    command = "az network routeserver peering create --name toCSR --peer-ip 10.0.3.4 --peer-asn 65001 --routeserver routeserver1 --resource-group ${azurerm_resource_group.RG.name}"
-  }
+  #provisioner "local-exec" {
+  #  command = "az network routeserver peering create --name toc8000 --peer-ip 10.0.3.4 --peer-asn 65001 --routeserver routeserver1 --resource-group ${azurerm_resource_group.RG.name}"
+  #}
+}
+resource "azurerm_route_server_bgp_connection" "bgpcon1" {
+  name            = "Toc8000v"
+  route_server_id = azurerm_route_server.RS1.id
+  peer_asn        = 65001
+  peer_ip         = "10.0.3.4"
 }
 
 
@@ -693,10 +699,10 @@ resource "azurerm_network_interface" "spoke2vm-nic" {
   
 }
 
-resource "azurerm_network_interface" "hubcsrinside-nic" {
+resource "azurerm_network_interface" "hubc8000inside-nic" {
   enable_ip_forwarding = true
   location            = azurerm_resource_group.RG.location
-  name                = "hubcsrinside-nic"
+  name                = "hubc8000inside-nic"
   resource_group_name = azurerm_resource_group.RG.name
   ip_configuration {
     name                          = "ipconfig1"
@@ -711,15 +717,15 @@ resource "azurerm_network_interface" "hubcsrinside-nic" {
   }
   
 }
-resource "azurerm_network_interface" "hubcsroutside-nic" {
+resource "azurerm_network_interface" "hubc8000outside-nic" {
   enable_ip_forwarding = true
   location            = azurerm_resource_group.RG.location
-  name                = "hubcsroutside-nic"
+  name                = "hubc8000outside-nic"
   resource_group_name = azurerm_resource_group.RG.name
   ip_configuration {
     name                          = "ipconfig1"
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.hubcsr-pip.id
+    public_ip_address_id          = azurerm_public_ip.hubc8000-pip.id
     subnet_id                     = azurerm_virtual_network.hub-vnet.subnet.*.id[2]
   }
   timeouts {
@@ -885,8 +891,8 @@ resource "azurerm_linux_virtual_machine" "hubc8000v" {
   admin_username                  = var.D-username
   disable_password_authentication = false
   location                        = azurerm_resource_group.RG.location
-  name                            = "HubCSR"
-  network_interface_ids           = [azurerm_network_interface.hubcsroutside-nic.id,azurerm_network_interface.hubcsrinside-nic.id]
+  name                            = "Hubc8000"
+  network_interface_ids           = [azurerm_network_interface.hubc8000outside-nic.id,azurerm_network_interface.hubc8000inside-nic.id]
   resource_group_name             = azurerm_resource_group.RG.name
   size                            = "Standard_D2_v2"
   os_disk {
@@ -904,12 +910,12 @@ resource "azurerm_linux_virtual_machine" "hubc8000v" {
     sku       = "17_13_01a-byol"
     version   = "latest"
   }
-  custom_data = base64encode(local.hubcsr_custom_data)
+  custom_data = base64encode(local.hubc8000_custom_data)
 }
 
 # Locals Block for custom data
 locals {
-hubcsr_custom_data = <<CUSTOM_DATA
+hubc8000_custom_data = <<CUSTOM_DATA
 Section: IOS configuration
 int gi1
 no shut
