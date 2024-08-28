@@ -199,7 +199,7 @@ resource "azurerm_virtual_network" "hub-vnet" {
   name                = "AZ-hub-vnet"
   resource_group_name = azurerm_resource_group.RG.name
   subnet {
-    address_prefix     = "10.0.0.0/24"]
+    address_prefix     = ["10.0.0.0/24"]
     name                 = "default"
     security_group = azurerm_network_security_group.hubvnetNSG.id
   }
