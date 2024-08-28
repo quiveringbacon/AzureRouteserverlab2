@@ -1,6 +1,7 @@
 provider "azurerm" {
   features {
   }
+subscription_id = var.F-SubscriptionID
 }
 
 #variables
@@ -32,6 +33,10 @@ variable "D-username" {
 variable "E-password" {
     description = "Password for Virtual Machines"
     sensitive = true
+}
+
+variable "F-SubscriptionID" {
+  description = "Subscription ID to use"  
 }
 
 resource "azurerm_resource_group" "RG" {
@@ -700,7 +705,7 @@ resource "azurerm_network_interface" "spoke2vm-nic" {
 }
 
 resource "azurerm_network_interface" "hubc8000inside-nic" {
-  enable_ip_forwarding = true
+  ip_forwarding_enabled = true
   location            = azurerm_resource_group.RG.location
   name                = "hubc8000inside-nic"
   resource_group_name = azurerm_resource_group.RG.name
@@ -718,7 +723,7 @@ resource "azurerm_network_interface" "hubc8000inside-nic" {
   
 }
 resource "azurerm_network_interface" "hubc8000outside-nic" {
-  enable_ip_forwarding = true
+  ip_forwarding_enabled = true
   location            = azurerm_resource_group.RG.location
   name                = "hubc8000outside-nic"
   resource_group_name = azurerm_resource_group.RG.name
